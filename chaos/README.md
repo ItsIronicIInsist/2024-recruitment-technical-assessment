@@ -29,18 +29,28 @@ Write (Postgres) SQL `CREATE TABLE` statements to create the following schema.
 Make sure to include foreign keys for the relationships that will `CASCADE` upon deletion.
 ![Database Schema](db_schema.png)
 
+# Message to whoevers readin this
+# I'm assuming question_type is an enum, but that I dont have to declare/specify it?
+# thanks
 **Answer box:**
 ```sql
 CREATE TABLE forms (
-    --     Add columns here
+	id          integer primary key,
+	title       text,
+	description text
 );
 
 CREATE TABLE questions (
-    --     Add columns here
+	id integer      primary key,
+	form_id integer references forms(id),
+	title           text,
+	question_type   question_type
 );
 
 CREATE TABLE question_options (
-    --     Add columns here
+	id          integer,
+	question_id integer references questions(id),
+	option      text
 );
 ```
 
@@ -57,4 +67,9 @@ Using the above schema, write a (Postgres) SQL `SELECT` query to return all ques
 **Answer box:**
 ```sql
 -- Write query here
+SELECT questions.*, array_agg(question_options.option) as options
+	FROM questions
+    LEFT JOIN question_options ON questions.id = question_options.question_id
+    WHERE form_id=26583
+    GROUP BY questions.id;
 ```

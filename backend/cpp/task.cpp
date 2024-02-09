@@ -2,6 +2,8 @@
 #include <cassert>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <iostream>
 
 struct File {
     int id;
@@ -16,7 +18,33 @@ struct File {
  * Task 1
  */
 std::vector<std::string> leafFiles(std::vector<File> files) {
-    return std::vector<std::string>();
+	// Mapping from file id to their name, with capacity = # of files
+	std::unordered_map<int, std::string> id_mappings(files.size());
+
+	for (File f: files) {
+		if (f.parent != -1) {
+			// If parent exists, delete
+			if(!id_mappings.erase(f.parent)) {
+				// Parent may be after however (e.g no items erased, erase returns 0)
+				// So we create an entry
+				// Id prefer to use std::optional but thas C++17
+				id_mappings[f.parent];
+			}
+		}
+
+		// Normal insert
+		if (id_mappings.count(f.id))
+			//If our id is already in there, we are a parent - we should just delete
+			id_mappings.erase(f.id);
+		else
+			// Else insert happily
+			id_mappings[f.id] = f.name;
+	}
+
+	std::vector<std::string> filenames;
+	std::transform(id_mappings.begin(), id_mappings.end(), std::back_inserter(filenames), [](std::pair<int, std::string> kv){ return kv.second;} );
+
+	return filenames;
 }
 
 /**
